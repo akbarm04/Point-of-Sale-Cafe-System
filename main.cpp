@@ -60,7 +60,7 @@ void insertLastDLL(int id, string nama, int harga, int qty) {
         tailCart = newNode;
     }
     
-    cout << "\n[SUCCESS] " << qty << " " << nama << " berhasil ditambahkan ke keranjang!" << endl;
+    cout << "\n[BERHASIL] " << qty << " " << nama << " berhasil ditambahkan ke keranjang!" << endl;
 }
 
 //Fungsi pencarian urutan node pesanan
@@ -100,14 +100,14 @@ void removeCartItem(CartNode* hapus) {
         hapus->prev->next = hapus->next;
     }
 
-    cout << "\n[BERHASIL] Pesanan " << hapus->namaMenu << " telah dihapus dari keranjang!" << endl;
+    cout << "\n[BERHASIL] Pesanan " << hapus->namaMenu << " telah dihapus dari keranjang" << endl;
     delete hapus; 
 }
 
 // FUNGSI MENAMPILKAN ISI KERANJANG
 void cetakCart() {
     if (headCart == NULL) {
-        cout << "\nKeranjang masih kosong! Yuk pesan dulu." << endl;
+        cout << "\nKeranjang masih kosong." << endl;
         return;
     }
 
@@ -172,6 +172,7 @@ void removeFirstSLL() {
     }
 
     delete temp;
+    temp = NULL;
 }
 
 // CETAK ANTREAN
@@ -217,22 +218,39 @@ int main() {
         cout << "4. Lihat antrean dapur" << endl;
         cout << "5. Keluar" << endl;
         cout << "Pilih menu: ";
-        cin >> pilihan;
+        
+        if (!(cin >> pilihan)) {
+            cin.clear();
+            cin.ignore(10000, '\n');
+            cout << "[ERROR] Input harus angka, Silakan coba lagi.\n";
+            pilihan = 0;
+            continue;
+        }
 
         switch(pilihan) {
             case 1: {
                 tampilkanMenu(daftarMenu, 10);
                 int idPesanan, jumlah;
                 cout << "\nMasukkan Nomor Menu yang ingin dipesan: ";
-                cin >> idPesanan;
+                if (!(cin >> idPesanan)) {
+                    cin.clear();
+                    cin.ignore(10000, '\n');
+                    cout << "[ERROR] ID Menu harus angka\n";
+                    break;
+                }
                 
                 if(idPesanan >= 1 && idPesanan <= 10) {
                     cout << "Masukkan jumlah pesanan: ";
-                    cin >> jumlah;
+                    if (!(cin >> jumlah)) {
+                        cin.clear();
+                        cin.ignore(10000, '\n');
+                        cout << "[ERROR] Jumlah pesanan harus angka\n";
+                        break; 
+                    }
                     int index = idPesanan - 1;
                     insertLastDLL(daftarMenu[index].id, daftarMenu[index].nama, daftarMenu[index].harga, jumlah);
                 } else {
-                    cout << "Maaf, nomor menu tidak ditemukan!" << endl;
+                    cout << "Maaf, nomor menu tidak ditemukan" << endl;
                 }
                 break;
             }
@@ -245,11 +263,21 @@ int main() {
                     cout << "\n0. Kembali ke menu utama." << endl;
                     cout << "1. Hapus Item Tertentu" << endl;
                     cout << "Pilih Aksi: ";
-                    cin >> pilihanAksi;
+                    if (!(cin >> pilihanAksi)) {
+                        cin.clear();
+                        cin.ignore(10000, '\n');
+                        cout << "[ERROR] Pilihan aksi harus angka\n";
+                        break;
+                    }
                     
                     if (pilihanAksi == 1) {
                         cout << "\nKetik Nomor Pesanan (1, 2, 3...) yang ingin dihapus: ";
-                        cin >> pilihanHapus;
+                        if (!(cin >> pilihanHapus)) {
+                            cin.clear();
+                            cin.ignore(10000, '\n');
+                            cout << "[ERROR] Nomor pesanan harus angka!\n";
+                            break;
+                        }
 
                         if (pilihanHapus > 0) {
                             CartNode* target = findCartItem(pilihanHapus); 
@@ -257,7 +285,7 @@ int main() {
                             if (target != NULL) {
                                 removeCartItem(target); 
                             } else {
-                                cout << "[GAGAL] Nomor pesanan tidak ditemukan di keranjang!" << endl;
+                                cout << "[ERROR] Nomor pesanan tidak ditemukan di keranjang" << endl;
                             }
                         }
                     }
@@ -265,11 +293,56 @@ int main() {
                 break;
             }
 
-            case 3:
-                // Simulasi checkout ke dapur
-                inputPesananDapur("A001", "2x Kopi Susu, 1x Burger");
-                cout << "[INFO] Checkout berhasil, pesanan dikirim ke dapur\n";
+            case 3: {
+                if (headCart == NULL) {
+                    cout << "\n[ERROR] Keranjang kosong! Silakan pesan terlebih dahulu." << endl;
+                } else {
+                    string daftarPesananFinal = "";
+                    CartNode* temp = headCart;
+                    int totalBayar = 0;
+                    static int counterAntrean = 1;
+
+                    while (temp != NULL) {
+                        daftarPesananFinal += to_string(temp->qty) + "x " + temp->namaMenu;
+                        totalBayar += temp->subtotal;
+                        
+                        if (temp->next != NULL) {
+                            daftarPesananFinal += ", ";
+                        }
+                        temp = temp->next;
+                    }
+
+                    cout << "\n===========================" << endl;
+                    cout << "      PROSES CHECKOUT" << endl;
+                    cout << "===========================" << endl;
+                    cout << "Detail: " << daftarPesananFinal << endl;
+                    cout << "Total Bayar: Rp" << totalBayar << endl;
+                    cout << "---------------------------" << endl;
+                    
+                    string idAntrean = "A";
+
+                    if (counterAntrean < 10) {
+                        idAntrean += "00" + to_string(counterAntrean);
+                    } else if (counterAntrean < 100) {
+                        idAntrean += "0" + to_string(counterAntrean);
+                    } else {
+                        idAntrean += to_string(counterAntrean);
+                    }
+                    counterAntrean++;
+
+                    inputPesananDapur(idAntrean, daftarPesananFinal); 
+
+                    while (headCart != NULL) {
+                        CartNode* hapus = headCart;
+                        headCart = headCart->next;
+                        delete hapus;
+                    }
+                    tailCart = NULL; 
+
+                    cout << "[SUKSES] Pesanan dikirim ke dapur dengan ID: " << idAntrean << endl;
+                }
                 break;
+            }
 
             case 4: {
                 int pilihDapur;
@@ -282,7 +355,13 @@ int main() {
                     cout << "1. Selesaikan pesanan paling depan\n";
                     cout << "2. Kembali ke menu utama\n";
                     cout << "Pilih: ";
-                    cin >> pilihDapur;
+                    if (!(cin >> pilihDapur)) {
+                        cin.clear();
+                        cin.ignore(10000, '\n');
+                        cout << "[ERROR] Pilihan harus angka\n";
+                        pilihDapur = 0;
+                        continue;
+                    }
 
                     if (pilihDapur == 1) {
                         removeFirstSLL();
