@@ -128,6 +128,69 @@ void cetakCart() {
     cout << "Total Belanja Sementara: Rp" << totalHarga << endl;
 }
 
+// ================== ANTREAN DAPUR ==================
+struct AntreanDapur {
+    string kodePesanan;
+    string daftarPesanan;
+    AntreanDapur* next;
+};
+
+AntreanDapur* headDapur = NULL;
+AntreanDapur* tailDapur = NULL;
+
+// TAMBAH ANTREAN
+void inputPesananDapur(string kode, string pesanan) {
+    AntreanDapur* pesananBaru = new AntreanDapur;
+    pesananBaru->kodePesanan = kode;
+    pesananBaru->daftarPesanan = pesanan;
+    pesananBaru->next = NULL;
+
+    if (headDapur == NULL) {
+        headDapur = tailDapur = pesananBaru;
+    } else {
+        tailDapur->next = pesananBaru;
+        tailDapur = pesananBaru;
+    }
+
+    cout << "Pesanan " << kode << " masuk ke dapur\n";
+}
+
+// HAPUS ANTREAN DEPAN
+void removeFirstSLL() {
+    if (headDapur == NULL) {
+        cout << "Antrean kosong!\n";
+        return;
+    }
+
+    AntreanDapur* temp = headDapur;
+    cout << "Pesanan selesai: " << temp->kodePesanan << endl;
+
+    headDapur = headDapur->next;
+
+    if (headDapur == NULL) {
+        tailDapur = NULL;
+    }
+
+    delete temp;
+}
+
+// CETAK ANTREAN
+void cetakAntreanDapur() {
+    if (headDapur == NULL) {
+        cout << "Antrean kosong!\n";
+        return;
+    }
+
+    AntreanDapur* current = headDapur;
+
+    while (current != NULL) {
+        cout << "[->] Antrean No-" << current->kodePesanan << endl;
+        cout << "     Pesanan: " << current->daftarPesanan << endl;
+        cout << "\n";
+        current = current->next;
+    }
+}
+
 //FUNGSI TAMPIL MENU
 void tampilkanMenu(Menu menu[], int size) {
     cout << "===== MENU CAFE =====" << endl;
@@ -143,7 +206,6 @@ void tampilkanMenu(Menu menu[], int size) {
 //MAIN (SISTEM KASIR)
 int main() {
     int pilihan;
-
     do {
         cout << "===========================" << endl;
         cout << "SISTEM KASIR & ANTREAN CAFE" << endl;
@@ -175,7 +237,7 @@ int main() {
                 break;
             }
 
-            case 2:
+            case 2: {
                 cetakCart();
                 if (headCart != NULL) {
                     int pilihanHapus;
@@ -190,26 +252,46 @@ int main() {
                         cin >> pilihanHapus;
 
                         if (pilihanHapus > 0) {
-                        CartNode* target = findCartItem(pilihanHapus); 
-                        
-                        if (target != NULL) {
-                            removeCartItem(target); 
-                        } else {
-                            cout << "[GAGAL] Nomor pesanan tidak ditemukan di keranjang!" << endl;
+                            CartNode* target = findCartItem(pilihanHapus); 
+                            
+                            if (target != NULL) {
+                                removeCartItem(target); 
+                            } else {
+                                cout << "[GAGAL] Nomor pesanan tidak ditemukan di keranjang!" << endl;
+                            }
                         }
                     }
-                    }
-                    
                 }
                 break;
+            }
 
             case 3:
-                cout << "[INFO] Checkout & pembayaran (iky)" << endl;
+                // Simulasi checkout ke dapur
+                inputPesananDapur("A001", "2x Kopi Susu, 1x Burger");
+                cout << "[INFO] Checkout berhasil, pesanan dikirim ke dapur\n";
                 break;
 
-            case 4:
-                cout << "[INFO] Antrean dapur (danish)" << endl;
+            case 4: {
+                int pilihDapur;
+                do {
+                    cout << "===========================" << endl;
+                    cout << "     ANTREAN DAPUR" << endl;
+                    cout << "===========================" << endl;
+                    cetakAntreanDapur();
+                    cout << "===========================" << endl;
+                    cout << "1. Selesaikan pesanan paling depan\n";
+                    cout << "2. Kembali ke menu utama\n";
+                    cout << "Pilih: ";
+                    cin >> pilihDapur;
+
+                    if (pilihDapur == 1) {
+                        removeFirstSLL();
+                    } else if (pilihDapur != 1 && pilihDapur != 2){
+                        cout << "Pilihan tidak valid\n";
+                    }
+                } while (pilihDapur != 2);
                 break;
+            }
 
             case 5:
                 cout << "Terima kasih" << endl;
@@ -218,7 +300,7 @@ int main() {
             default:
                 cout << "Pilihan tidak valid" << endl;
         }
-    } while(pilihan != 5);
-
+    } while (pilihan != 5);
+    
     return 0;
 }
