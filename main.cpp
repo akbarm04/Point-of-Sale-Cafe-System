@@ -10,6 +10,21 @@ struct Menu {
     int harga;
 };
 
+//STRUCT KERANJANG
+struct CartNode {
+    int idMenu;
+    string namaMenu;
+    int hargaSatuan;
+    int qty;
+    int subtotal;
+    
+    CartNode* prev;
+    CartNode* next;
+};
+
+CartNode* headCart = NULL;
+CartNode* tailCart = NULL;
+
 //ARRAY (Database Menu Cafe)
 Menu daftarMenu[10] = {
     {1, "Americano", "Minuman", 15000},
@@ -87,6 +102,95 @@ void cetakAntreanDapur() {
     }
 }
 
+// FUNGSI MEMASUKKAN PESANAN
+void insertLastDLL(int id, string nama, int harga, int qty) {
+    CartNode* newNode = new CartNode;
+    newNode->idMenu = id;
+    newNode->namaMenu = nama;
+    newNode->hargaSatuan = harga;
+    newNode->qty = qty;
+    newNode->subtotal = harga * qty;
+    newNode->prev = NULL;
+    newNode->next = NULL;
+
+    if (headCart == NULL) {
+        headCart = newNode;
+        tailCart = newNode;
+    } 
+    else {
+        tailCart->next = newNode;
+        newNode->prev = tailCart;
+        tailCart = newNode;
+    }
+    
+    cout << "\n[SUCCESS] " << qty << " " << nama << " berhasil ditambahkan ke keranjang!" << endl;
+}
+
+//Fungsi pencarian urutan node pesanan
+CartNode* findCartItem(int nomorTarget) {
+    CartNode* current = headCart;
+    int nomor = 1; 
+    
+    while (current != NULL) {
+        if (nomor == nomorTarget) {
+            return current; 
+        }
+        current = current->next;
+        nomor++;
+    }
+    return NULL; 
+}
+
+//Fungsi Hapus Pesanan dalam keranjang
+void removeCartItem(CartNode* hapus) {
+    if (hapus == NULL || headCart == NULL) {
+        return; 
+    }
+
+    if (headCart == hapus) {
+        headCart = hapus->next;
+    }
+
+    if (tailCart == hapus) {
+        tailCart = hapus->prev;
+    }
+
+    if (hapus->next != NULL) {
+        hapus->next->prev = hapus->prev;
+    }
+
+    if (hapus->prev != NULL) {
+        hapus->prev->next = hapus->next;
+    }
+
+    cout << "\n[BERHASIL] Pesanan " << hapus->namaMenu << " telah dihapus dari keranjang!" << endl;
+    delete hapus; 
+}
+
+// FUNGSI MENAMPILKAN ISI KERANJANG
+void cetakCart() {
+    if (headCart == NULL) {
+        cout << "\nKeranjang masih kosong! Yuk pesan dulu." << endl;
+        return;
+    }
+
+    CartNode* current = headCart;
+    int totalHarga = 0;
+    int nomor = 1;
+
+    cout << "\n===== ISI KERANJANG =====" << endl;
+    while (current != NULL) {
+        cout << nomor << ". " << current->namaMenu 
+             << " (" << current->qty << ") = Rp" << current->subtotal << endl;
+        
+        totalHarga += current->subtotal;
+        current = current->next;
+        nomor++;
+    }
+    cout << "-------------------------" << endl;
+    cout << "Total Belanja Sementara: Rp" << totalHarga << endl;
+}
+
 //FUNGSI TAMPIL MENU
 void tampilkanMenu(Menu menu[], int size) {
     cout << "===== MENU CAFE =====" << endl;
@@ -114,15 +218,51 @@ int main() {
         cout << "5. Keluar" << endl;
         cout << "Pilih menu: ";
         cin >> pilihan;
-    
+
         switch(pilihan) {
-            case 1:
+            case 1: {
                 tampilkanMenu(daftarMenu, 10);
-                cout << "[INFO] Tambah ke keranjang (rifa)" << endl;
+                int idPesanan, jumlah;
+                cout << "\nMasukkan Nomor Menu yang ingin dipesan: ";
+                cin >> idPesanan;
+                
+                if(idPesanan >= 1 && idPesanan <= 10) {
+                    cout << "Masukkan jumlah pesanan: ";
+                    cin >> jumlah;
+                    int index = idPesanan - 1;
+                    insertLastDLL(daftarMenu[index].id, daftarMenu[index].nama, daftarMenu[index].harga, jumlah);
+                } else {
+                    cout << "Maaf, nomor menu tidak ditemukan!" << endl;
+                }
                 break;
+            }
 
             case 2:
-                cout << "[INFO] Lihat keranjang (rifa & akbar)" << endl;
+                cetakCart();
+                if (headCart != NULL) {
+                    int pilihanHapus;
+                    int pilihanAksi;
+                    cout << "\n0. Kembali ke menu utama." << endl;
+                    cout << "1. Hapus Item Tertentu" << endl;
+                    cout << "Pilih Aksi: ";
+                    cin >> pilihanAksi;
+                    
+                    if (pilihanAksi == 1) {
+                        cout << "\nKetik Nomor Pesanan (1, 2, 3...) yang ingin dihapus: ";
+                        cin >> pilihanHapus;
+
+                        if (pilihanHapus > 0) {
+                        CartNode* target = findCartItem(pilihanHapus); 
+                        
+                        if (target != NULL) {
+                            removeCartItem(target); 
+                        } else {
+                            cout << "[GAGAL] Nomor pesanan tidak ditemukan di keranjang!" << endl;
+                        }
+                    }
+                    }
+                    
+                }
                 break;
 
             case 3:
@@ -151,6 +291,7 @@ int main() {
                     }
                 } while (pilihDapur != 2);
                 break;
+
             case 5:
                 cout << "Terima kasih" << endl;
                 break;
@@ -158,6 +299,7 @@ int main() {
             default:
                 cout << "Pilihan tidak valid" << endl;
         }
-    } while (pilihan != 5);
+    } while(pilihan != 5);
+
     return 0;
 }
