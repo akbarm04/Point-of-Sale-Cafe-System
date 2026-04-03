@@ -219,7 +219,7 @@ void tampilkanMenu(Menu menu[], int size) {
 int main() {
     int pilihan;
     do {
-        cout << "===========================" << endl;
+        cout << "\n===========================" << endl;
         cout << "SISTEM KASIR & ANTREAN CAFE" << endl;
         cout << "===========================" << endl;
 
@@ -242,30 +242,40 @@ int main() {
             case 1: {
                 tampilkanMenu(daftarMenu, 10);
                 int idPesanan, jumlah;
-                cout << "\nMasukkan Nomor Menu yang ingin dipesan: ";
-                if (!(cin >> idPesanan)) {
-                    cin.clear();
-                    cin.ignore(10000, '\n');
-                    cout << "[ERROR] ID Menu harus angka\n";
-                    break;
-                }
+                bool inputSelesai = false;
                 
-                if(idPesanan >= 1 && idPesanan <= 10) {
-                    cout << "Masukkan jumlah pesanan: ";
-                    if (!(cin >> jumlah)) {
+                while (!inputSelesai) {
+                    cout << "\nMasukkan Nomor Menu yang ingin dipesan (0 untuk batal): ";
+                    if (!(cin >> idPesanan)) {
                         cin.clear();
                         cin.ignore(10000, '\n');
-                        cout << "[ERROR] Jumlah pesanan harus angka\n";
-                        break; 
+                        cout << "[ERROR] ID Menu harus angka\n";
+                        continue;
                     }
-                    if (jumlah <= 0) {
-                        cout << "[ERROR] Jumlah pesanan tidak boleh nol\n";
+                    
+                    if (idPesanan == 0) break;
+                    
+                    if(idPesanan >= 1 && idPesanan <= 10) {
+                        while (true) {
+                            cout << "Masukkan jumlah pesanan: ";
+                            if (!(cin >> jumlah)) {
+                                cin.clear();
+                                cin.ignore(10000, '\n');
+                                cout << "[ERROR] Jumlah pesanan harus angka\n";
+                                continue; 
+                            }
+                            if (jumlah <= 0) {
+                                cout << "[ERROR] Jumlah pesanan tidak boleh nol\n";
+                            } else {
+                                int index = idPesanan - 1;
+                                insertLastDLL(daftarMenu[index].id, daftarMenu[index].nama, daftarMenu[index].harga, jumlah);
+                                inputSelesai = true;
+                                break;
+                            }
+                        }
                     } else {
-                        int index = idPesanan - 1;
-                        insertLastDLL(daftarMenu[index].id, daftarMenu[index].nama, daftarMenu[index].harga, jumlah);
+                        cout << "Maaf, nomor menu tidak ditemukan. Silakan input ulang." << endl;
                     }
-                } else {
-                    cout << "Maaf, nomor menu tidak ditemukan" << endl;
                 }
                 break;
             }
@@ -275,51 +285,75 @@ int main() {
                 if (headCart != NULL) {
                     int pilihanHapus;
                     int pilihanAksi;
-                    cout << "\n0. Kembali ke menu utama." << endl;
-                    cout << "1. Hapus Item" << endl;
-                    cout << "2. Edit Item" << endl;
-                    cout << "Pilih Aksi: ";
-                    if (!(cin >> pilihanAksi)) {
-                        cin.clear();
-                        cin.ignore(10000, '\n');
-                        cout << "[ERROR] Pilihan aksi harus angka\n";
-                        break;
-                    }
+                    bool aksiSelesai = false;
                     
-                    if (pilihanAksi == 1) {
-                        cout << "\nKetik Nomor Pesanan (1, 2, 3...) yang ingin dihapus: ";
-                        if (!(cin >> pilihanHapus)) {
+                    while (!aksiSelesai) {
+                        cout << "\n0. Kembali ke menu utama." << endl;
+                        cout << "1. Hapus Item" << endl;
+                        cout << "2. Edit Item" << endl;
+                        cout << "Pilih Aksi: ";
+                        
+                        if (!(cin >> pilihanAksi)) {
                             cin.clear();
                             cin.ignore(10000, '\n');
-                            cout << "[ERROR] Nomor pesanan harus angka!\n";
-                            break;
+                            cout << "[ERROR] Pilihan aksi harus angka\n";
+                            continue;
                         }
+                        
+                        if (pilihanAksi == 0) {
+                            aksiSelesai = true;
+                        } else if (pilihanAksi == 1) {
+                            cout << "\nKetik Nomor Pesanan (1, 2, 3...) yang ingin dihapus: ";
+                            if (!(cin >> pilihanHapus)) {
+                                cin.clear();
+                                cin.ignore(10000, '\n');
+                                cout << "[ERROR] Nomor pesanan harus angka!\n";
+                                continue;
+                            }
 
-                        if (pilihanHapus > 0) {
-                            CartNode* target = findCartItem(pilihanHapus); 
-                            
+                            if (pilihanHapus > 0) {
+                                CartNode* target = findCartItem(pilihanHapus); 
+                                
+                                if (target != NULL) {
+                                    removeCartItem(target); 
+                                } else {
+                                    cout << "[ERROR] Nomor pesanan tidak ditemukan di keranjang" << endl;
+                                }
+                            }
+                            aksiSelesai = true;
+                        } else if (pilihanAksi == 2) {
+                            int pilihanUbah, qtyBaru;
+                            cout << "\nKetik Nomor Pesanan (1, 2, 3...) yang ingin diedit: ";
+                            if (!(cin >> pilihanUbah)) {
+                                cin.clear();
+                                cin.ignore(10000, '\n');
+                                cout << "[ERROR] Harus angka!\n";
+                                continue;
+                            }
+
+                            CartNode* target = findCartItem(pilihanUbah);
                             if (target != NULL) {
-                                removeCartItem(target); 
+                                while (true) {
+                                    cout << "Masukkan jumlah (qty) yang baru: ";
+                                    if (!(cin >> qtyBaru)) {
+                                        cin.clear();
+                                        cin.ignore(10000, '\n');
+                                        cout << "[ERROR] Harus angka!\n";
+                                        continue;
+                                    }
+                                    if (qtyBaru > 0) {
+                                        ubahPesanan(target, qtyBaru);
+                                    } else {
+                                        removeCartItem(target);
+                                    }
+                                    break;
+                                }
                             } else {
-                                cout << "[ERROR] Nomor pesanan tidak ditemukan di keranjang" << endl;
+                                cout << "[GAGAL] Nomor pesanan tidak ditemukan!" << endl;
                             }
-                        }
-                    } else if (pilihanAksi == 2) {
-                        int pilihanUbah, qtyBaru;
-                        cout << "\nKetik Nomor Pesanan (1, 2, 3...) yang ingin diedit: ";
-                        cin >> pilihanUbah;
-
-                        CartNode* target = findCartItem(pilihanUbah);
-                        if (target != NULL) {
-                            cout << "Masukkan jumlah (qty) yang baru: ";
-                            cin >> qtyBaru;
-                            if (qtyBaru > 0) {
-                                ubahPesanan(target, qtyBaru);
-                            } else {
-                                removeCartItem(target);
-                            }
+                            aksiSelesai = true;
                         } else {
-                            cout << "[GAGAL] Nomor pesanan tidak ditemukan!" << endl;
+                            cout << "[INFO] Pilihan aksi tidak valid. Silakan pilih 0, 1, atau 2." << endl;
                         }
                     }
                 }
@@ -406,18 +440,19 @@ int main() {
                     cout << "0. Kembali ke menu utama\n";
                     cout << "1. Selesaikan pesanan paling depan\n";
                     cout << "Pilih: ";
+                    
                     if (!(cin >> pilihDapur)) {
                         cin.clear();
                         cin.ignore(10000, '\n');
                         cout << "[ERROR] Pilihan harus angka\n";
-                        pilihDapur = 0;
+                        pilihDapur = -1; 
                         continue;
                     }
 
                     if (pilihDapur == 1) {
                         removeFirstSLL();
                     } else if (pilihDapur != 1 && pilihDapur != 0){
-                        cout << "Pilihan tidak valid\n";
+                        cout << "Pilihan tidak valid. Silakan coba lagi.\n";
                     }
                 } while (pilihDapur != 0);
                 break;
