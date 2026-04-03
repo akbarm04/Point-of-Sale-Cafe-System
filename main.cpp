@@ -258,8 +258,12 @@ int main() {
                         cout << "[ERROR] Jumlah pesanan harus angka\n";
                         break; 
                     }
-                    int index = idPesanan - 1;
-                    insertLastDLL(daftarMenu[index].id, daftarMenu[index].nama, daftarMenu[index].harga, jumlah);
+                    if (jumlah <= 0) {
+                        cout << "[ERROR] Jumlah pesanan tidak boleh nol\n";
+                    } else {
+                        int index = idPesanan - 1;
+                        insertLastDLL(daftarMenu[index].id, daftarMenu[index].nama, daftarMenu[index].harga, jumlah);
+                    }
                 } else {
                     cout << "Maaf, nomor menu tidak ditemukan" << endl;
                 }
