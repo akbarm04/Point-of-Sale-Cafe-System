@@ -124,11 +124,11 @@ void cetakCart() {
         current = current->next;
         nomor++;
     }
-    cout << "-------------------------" << endl;
+    cout << "=========================" << endl;
     cout << "Total Belanja Sementara: Rp" << totalHarga << endl;
 }
 
-// ================== ANTREAN DAPUR ==================
+// ANTREAN DAPUR
 struct AntreanDapur {
     string kodePesanan;
     string daftarPesanan;
@@ -137,6 +137,8 @@ struct AntreanDapur {
 
 AntreanDapur* headDapur = NULL;
 AntreanDapur* tailDapur = NULL;
+
+int counterAntrean = 1;
 
 // TAMBAH ANTREAN
 void inputPesananDapur(string kode, string pesanan) {
@@ -163,7 +165,7 @@ void removeFirstSLL() {
     }
 
     AntreanDapur* temp = headDapur;
-    cout << "Pesanan selesai: " << temp->kodePesanan << endl;
+    cout << endl << "Pesanan selesai: " << temp->kodePesanan << endl;
 
     headDapur = headDapur->next;
 
@@ -295,51 +297,69 @@ int main() {
 
             case 3: {
                 if (headCart == NULL) {
-                    cout << "\n[ERROR] Keranjang kosong! Silakan pesan terlebih dahulu." << endl;
+                    cout << "\n[ERROR] Keranjang kosong!\n";
                 } else {
                     string daftarPesananFinal = "";
                     CartNode* temp = headCart;
                     int totalBayar = 0;
-                    static int counterAntrean = 1;
 
                     while (temp != NULL) {
                         daftarPesananFinal += to_string(temp->qty) + "x " + temp->namaMenu;
                         totalBayar += temp->subtotal;
-                        
-                        if (temp->next != NULL) {
-                            daftarPesananFinal += ", ";
-                        }
+                        if (temp->next != NULL) daftarPesananFinal += ", ";
                         temp = temp->next;
                     }
 
-                    cout << "\n===========================" << endl;
-                    cout << "      PROSES CHECKOUT" << endl;
-                    cout << "===========================" << endl;
+                    cout << "\n===== PROSES PEMBAYARAN =====" << endl;
                     cout << "Detail: " << daftarPesananFinal << endl;
-                    cout << "Total Bayar: Rp" << totalBayar << endl;
-                    cout << "---------------------------" << endl;
+                    cout << "Total : Rp" << totalBayar << endl;
                     
-                    string idAntrean = "A";
+                    int nominalBayar;
+                    bool batalTransaksi = false;
 
-                    if (counterAntrean < 10) {
-                        idAntrean += "00" + to_string(counterAntrean);
-                    } else if (counterAntrean < 100) {
-                        idAntrean += "0" + to_string(counterAntrean);
-                    } else {
-                        idAntrean += to_string(counterAntrean);
+                    while (true) {
+                        cout << "Bayar (Ketik 0 untuk batal) : Rp";
+                        if (!(cin >> nominalBayar)) {
+                            cin.clear(); cin.ignore(10000, '\n');
+                            cout << "[ERROR] Masukkan angka!\n"; continue;
+                        }
+                        
+                        if (nominalBayar == 0) {
+                            cout << "\n[INFO] Pembayaran dibatalkan. Kembali ke menu utama.\n";
+                            batalTransaksi = true; 
+                            break;
+                        }
+
+                        if (nominalBayar < totalBayar) {
+                            cout << "[!] Kurang Rp" << (totalBayar - nominalBayar) << "\n";
+                        } else break;
                     }
+
+                    if (batalTransaksi) {
+                        break; 
+                    }
+
+                    cout << "\n===== STRUK PEMBAYARAN =====" << endl;
+                    cout << "Total     : Rp" << totalBayar << endl;
+                    cout << "Bayar     : Rp" << nominalBayar << endl;
+                    cout << "Kembalian : Rp" << (nominalBayar - totalBayar) << endl;
+                    cout << "============================" << endl;
+
+                    string idAntrean = "A";
+                    if (counterAntrean < 10) idAntrean += "00" + to_string(counterAntrean);
+                    else if (counterAntrean < 100) idAntrean += "0" + to_string(counterAntrean);
+                    else idAntrean += to_string(counterAntrean);
                     counterAntrean++;
 
                     inputPesananDapur(idAntrean, daftarPesananFinal); 
-
+                    
                     while (headCart != NULL) {
                         CartNode* hapus = headCart;
                         headCart = headCart->next;
                         delete hapus;
                     }
                     tailCart = NULL; 
-
-                    cout << "[SUKSES] Pesanan dikirim ke dapur dengan ID: " << idAntrean << endl;
+                    cout << "[SUKSES] Pesanan LUNAS (ID: " << idAntrean << ")\n" << endl ;
                 }
                 break;
             }
@@ -347,13 +367,13 @@ int main() {
             case 4: {
                 int pilihDapur;
                 do {
-                    cout << "===========================" << endl;
+                    cout << endl << "===========================" << endl;
                     cout << "     ANTREAN DAPUR" << endl;
                     cout << "===========================" << endl;
                     cetakAntreanDapur();
                     cout << "===========================" << endl;
+                    cout << "0. Kembali ke menu utama\n";
                     cout << "1. Selesaikan pesanan paling depan\n";
-                    cout << "2. Kembali ke menu utama\n";
                     cout << "Pilih: ";
                     if (!(cin >> pilihDapur)) {
                         cin.clear();
@@ -365,10 +385,10 @@ int main() {
 
                     if (pilihDapur == 1) {
                         removeFirstSLL();
-                    } else if (pilihDapur != 1 && pilihDapur != 2){
+                    } else if (pilihDapur != 1 && pilihDapur != 0){
                         cout << "Pilihan tidak valid\n";
                     }
-                } while (pilihDapur != 2);
+                } while (pilihDapur != 0);
                 break;
             }
 
