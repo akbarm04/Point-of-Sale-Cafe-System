@@ -194,6 +194,15 @@ void cetakAntreanDapur() {
     }
 }
 
+void ubahPesanan(CartNode* target, int qtyBaru) {
+    if (target != NULL) {
+        target->qty = qtyBaru;
+        target->subtotal = target->hargaSatuan * qtyBaru;
+
+        cout << "\n[BERHASIL] Jumlah Pesanan " << target->namaMenu << " telah diperbarui menjadi " << qtyBaru << "!" << endl;
+    }
+}
+
 //FUNGSI TAMPIL MENU
 void tampilkanMenu(Menu menu[], int size) {
     cout << "===== MENU CAFE =====" << endl;
@@ -263,7 +272,8 @@ int main() {
                     int pilihanHapus;
                     int pilihanAksi;
                     cout << "\n0. Kembali ke menu utama." << endl;
-                    cout << "1. Hapus Item Tertentu" << endl;
+                    cout << "1. Hapus Item" << endl;
+                    cout << "2. Edit Item" << endl;
                     cout << "Pilih Aksi: ";
                     if (!(cin >> pilihanAksi)) {
                         cin.clear();
@@ -289,6 +299,23 @@ int main() {
                             } else {
                                 cout << "[ERROR] Nomor pesanan tidak ditemukan di keranjang" << endl;
                             }
+                        }
+                    } else if (pilihanAksi == 2) {
+                        int pilihanUbah, qtyBaru;
+                        cout << "\nKetik Nomor Pesanan (1, 2, 3...) yang ingin diedit: ";
+                        cin >> pilihanUbah;
+
+                        CartNode* target = findCartItem(pilihanUbah);
+                        if (target != NULL) {
+                            cout << "Masukkan jumlah (qty) yang baru: ";
+                            cin >> qtyBaru;
+                            if (qtyBaru > 0) {
+                                ubahPesanan(target, qtyBaru);
+                            } else {
+                                removeCartItem(target);
+                            }
+                        } else {
+                            cout << "[GAGAL] Nomor pesanan tidak ditemukan!" << endl;
                         }
                     }
                 }
